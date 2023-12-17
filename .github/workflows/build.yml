@@ -1,5 +1,3 @@
-# build.yml
-
 name: Build C++ Project
 
 on:
@@ -18,7 +16,7 @@ jobs:
     - name: Set up CMake
       uses: actions/setup-cmake@v1
       with:
-        cmake-version: '3.20.0' # You can change this to the version you need
+        cmake-version: '3.20.0' 
 
     - name: Configure and build
       run: |
