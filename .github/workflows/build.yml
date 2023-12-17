@@ -23,9 +23,13 @@ jobs:
         cmake -S . -B build
         cmake --build build
 
-    - name: Run Clang Static Analyzer
+    - name: Install Clang
       run: |
         sudo apt-get install -y clang
+
+    - name: Run Clang Static Analyzer
+      run: |
+        export PATH=$PATH:/usr/lib/llvm-*/bin
         scan-build cmake --build build
 
     - name: Run cppcheck
