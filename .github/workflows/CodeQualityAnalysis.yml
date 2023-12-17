@@ -14,32 +14,42 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install build tools
+    - name: Set up CMake
+      uses: lukka/run-cmake@v2
+      with:
+        cmakeListsOrSettingsJson: 'CMakeLists.txt'
+        cmakeBuildType: 'Release'
+
+    - name: Build
+      run: |
+        cmake --build build --config Release
+
+    - name: Run Clang static analysis
+      run: |
+        cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
+        scan-build --status-bugs make
+
+    - name: Install clang-format
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential
+        sudo apt-get install -y clang-format
 
-    - name: Build project
+    - name: Check code formatting
       run: |
-        cmake -S . -B build
-        cmake --build build
+        git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '*.cpp' '*.h' | xargs clang-format --output-replacements-xml -p 0 | grep -c '<replacement ' > /dev/null
 
-    - name: Run static analysis with cppcheck
+    - name: Run Cppcheck
       run: |
         sudo apt-get install -y cppcheck
-        find . -type f -name "*.cpp" -o -name "*.h" | xargs cppcheck --quiet --enable=all --error-exitcode=1
+        cppcheck --quiet --force --enable=warning,style,performance,portability --error-exitcode=1 .
 
-    - name: Run tests and generate coverage
+    - name: Run CppLint
       run: |
-        cmake -DCMAKE_BUILD_TYPE=Debug -S . -B build
-        cmake --build build
-        cd build
-        ctest
-        gcovr -r .. --html-details -o coverage.html
+        sudo apt-get install -y python3-pip
+        pip3 install cpplint
+        cpplint --recursive .
 
-    - name: Upload coverage report
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        name: code-coverage
-        path: build/coverage.html
+    - name: Run Unit Tests
+      run: |
+        cd build
+        ctest --output-on-failure
