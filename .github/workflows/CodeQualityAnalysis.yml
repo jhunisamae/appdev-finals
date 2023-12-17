@@ -27,7 +27,7 @@ jobs:
     - name: Run static analysis with cppcheck
       run: |
         sudo apt-get install -y cppcheck
-        cppcheck --quiet --enable=all --error-exitcode=1 --exclude=CMakeFiles .
+        find . -type f -name "*.cpp" -o -name "*.h" | xargs cppcheck --quiet --enable=all --error-exitcode=1
 
     - name: Run tests and generate coverage
       run: |
