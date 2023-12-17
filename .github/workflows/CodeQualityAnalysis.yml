@@ -27,7 +27,7 @@ jobs:
     - name: Run static analysis with cppcheck
       run: |
         sudo apt-get install -y cppcheck
-        cppcheck --quiet --enable=all --error-exitcode=1 --include=include --include=another_include .
+        cppcheck --quiet --enable=all --error-exitcode=1 -Iinclude .
 
 
     - name: Run tests and generate coverage
